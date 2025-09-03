@@ -7,7 +7,7 @@ from agents import Agent, Runner, function_tool, set_tracing_disabled
 
 
 # Disable tracing to reduce noise
-set_tracing_disabled(True)
+# set_tracing_disabled(True)
 
 # ---------------- INVENTORY FILE ----------------
 FILE = "inventory.json"
@@ -86,7 +86,7 @@ agent = Agent(
 async def chat():
     print("=== Inventory Management System Started ===\n")
     while True:
-        user_input = input("Enter command (list, add, update, delete, exit): ")
+        # user_input = input("Enter command (list, add, update, delete, exit): ")
         if user_input.lower() in ["exit", "quit"]:
             print("Session ended. Goodbye!")
             break
