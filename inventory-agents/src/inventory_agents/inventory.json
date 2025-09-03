@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "name": "Mouse",
+    "quantity": 20
+  },
+  {
+    "id": 2,
+    "name": "key",
+    "quantity": 10
+  },
+  {
+    "id": 3,
+    "name": "apple",
+    "quantity": 10
+  },
+  {
+    "id": 4,
+    "name": "key",
+    "quantity": 20
+  },
+  {
+    "id": 5,
+    "name": "disk",
+    "quantity": 20
+  }
+]

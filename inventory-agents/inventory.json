@@ -1,0 +1,27 @@
+[
+  {
+    "id": 3,
+    "name": "disks",
+    "quantity": 20
+  },
+  {
+    "id": 4,
+    "name": "disks",
+    "quantity": 25
+  },
+  {
+    "id": 5,
+    "name": "disk",
+    "quantity": 29
+  },
+  {
+    "id": 6,
+    "name": "keyboard",
+    "quantity": 12
+  },
+  {
+    "id": 7,
+    "name": "laptop charger",
+    "quantity": 5
+  }
+]

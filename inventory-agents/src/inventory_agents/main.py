@@ -1,111 +1,102 @@
 import asyncio
-from dataclasses import dataclass
-from typing import Optional
-from openai import AsyncOpenAI
-from agents import Agent, OpenAIChatCompletionsModel, Runner, set_tracing_disabled, function_tool, enable_verbose_stdout_logging
-from pydantic import BaseModel
+import json
+import os
+from inventory_agents.model import model
+from agents import Agent, Runner, function_tool, set_tracing_disabled
 
-# Model set up
-GEMINI_MODEL = "gemini/gemini-2.0-flash-exp"
-GEMINI_API_KEY = "AIzaSyDsUcjDanHvDO6oeQTpfVrurFVPYMclMU4"
-GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
-set_tracing_disabled(disabled=True)
 
-client = AsyncOpenAI(
-    api_key=GEMINI_API_KEY,
-    base_url=GEMINI_BASE_URL
-)
+# Disable tracing to reduce noise
+set_tracing_disabled(True)
 
-model = OpenAIChatCompletionsModel(
-    model="gemini-2.0-flash",
-    openai_client=client
-)
+# ---------------- INVENTORY FILE ----------------
+FILE = "inventory.json"
 
-inventory = [
-    {"id": 1, "name": "Laptop", "quantity": 10},
-    {"id": 2, "name": "Mouse", "quantity": 50},
-    {"id": 3, "name": "Keyboard", "quantity": 30}
-]
-@dataclass
-class InventoryItemInput:
-    operation: str
-    id: int = None
-    name: str = None
-    quantity: int = None
 
-class HelpfulAgentOutput(BaseModel):
-    response_type: str #"inventory"
-    inventory_data: str = None  # inventory responses
+def save_inventory():
+    with open(FILE, "w") as f:
+        json.dump(inventory, f, indent=2)
 
-# inventory management 
+
+# Agar file exist karti hai to load karo
+if os.path.exists(FILE):
+    try:
+        with open(FILE, "r") as f:
+            inventory = json.load(f)
+    except json.JSONDecodeError:
+        inventory = []   # blank rakho
+        save_inventory()
+else:
+    # Nayi file banegi blank inventory ke sath
+    inventory = []
+    save_inventory()
+
+
+# ---------------- TOOLS ----------------
+
 @function_tool
-async def manageInventory(item) -> str:
-    """
-    Manage inventory by adding, updating, or deleting items.
-    Operations: 'add' (new item), 'update' (modify existing), 'delete' (remove item).
-    For 'add', provide name and quantity. For 'update' or 'delete', provide id.
-    """
+async def listInventory() -> str:
+    """List all inventory items"""
+    if not inventory:
+        return "Inventory is empty."
+    return "\n".join(f"ID {i['id']}: {i['name']} (qty: {i['quantity']})" for i in inventory)
+
+
+@function_tool
+async def addItem(name: str, quantity: int) -> str:
+    """Add a new item to inventory"""
+    new_id = max((i["id"] for i in inventory), default=0) + 1
+    inventory.append({"id": new_id, "name": name, "quantity": quantity})
+    save_inventory()
+    return f"Added {name} with quantity {quantity} (ID: {new_id})"
+
+
+@function_tool
+async def updateItem(item_id: int, quantity: int) -> str:
+    """Update quantity of an existing item"""
+    for i in inventory:
+        if i["id"] == item_id:
+            i["quantity"] = quantity
+            save_inventory()
+            return f"Updated {i['name']} (ID: {item_id}) to qty {quantity}"
+    return f"Item with ID {item_id} not found."
+
+
+@function_tool
+async def deleteItem(item_id: int) -> str:
+    """Delete item from inventory"""
     global inventory
-    operation = (item.operation or "").lower()
+    for i in inventory:
+        if i["id"] == item_id:
+            inventory = [x for x in inventory if x["id"] != item_id]
+            save_inventory()
+            return f"Deleted {i['name']} (ID: {item_id})"
+    return f"Item with ID {item_id} not found."
 
 
-    print("\n\n\n")
-    print(f"Operation: {operation}, Item: {item}")
-    if operation == "add":
-        if not item.name or item.quantity is None:
-            return "Error: Name and quantity are required for adding an item."
-        new_id = max([item["id"] for item in inventory], default=0) + 1
-        inventory.append({"id": new_id, "name": item.name, "quantity": item.quantity})
-        return f"Added {item.name} with ID {new_id} and quantity {item.quantity}."
-
-    elif operation == "update":
-        if item.id is None or not item.name or item.quantity is None:
-            return "Error: ID, name, and quantity are required for updating an item."
-        for inv_item in inventory:
-            if inv_item["id"] == item.id:
-                inv_item["name"] = item.name
-                inv_item["quantity"] = item.quantity
-                return f"Updated item ID {item.id} to {item.name} with quantity {item.quantity}."
-        return f"Error: Item with ID {item.id} not found."
-
-    elif operation == "delete":
-        if item.id is None:
-            return "Error: ID is required for deleting an item."
-        for i, inv_item in enumerate(inventory):
-            if inv_item["id"] == item.id:
-                deleted_item = inventory.pop(i)
-                return f"Deleted item ID {item.id} ({deleted_item['name']})."
-        return {"error": f"Unknown operation: {operation}"}
-
-    else:
-        return "Error: Invalid operation. Use 'add', 'update', or 'delete'."
-
-# Define the agent 
+# ---------------- AGENT ----------------
 agent = Agent(
-    name="Helpful Assistant",
-    instructions="You are a helpful Assistant capable of managing an inventory. For inventory tasks (add, update, delete),  YOU MUST use manageInventory tool and return the current inventory state.",
+    name="Inventory Agent",
+    instructions="You can list, add, update, and delete inventory items using the provided tools.",
     model=model,
-    tools=[manageInventory],
-    output_type=HelpfulAgentOutput
+    tools=[listInventory, addItem, updateItem, deleteItem]
 )
 
-async def main(kickOffMessage: str):
-    print(f"RUN Initiated: {kickOffMessage}")
-    
-    result = await Runner.run(
-        agent,
-        input=kickOffMessage
-    )
-    # Print results 
-    print(result.final_output)
-    
-    if result.final_output and result.final_output.response_type == "inventory":
-        print("\nCurrent Inventory:")
-        print(inventory)
+# ---------------- MAIN (Interactive Mode) ----------------
+async def chat():
+    print("=== Inventory Management System Started ===\n")
+    while True:
+        user_input = input("Enter command (list, add, update, delete, exit): ")
+        if user_input.lower() in ["exit", "quit"]:
+            print("Session ended. Goodbye!")
+            break
 
-def start():
-    asyncio.run(main("Add a new item to the inventory: , quantity 25"))
+        result = await Runner.run(agent, input=user_input)
+        print("Response:", result.final_output, "\n")
+
 
 if __name__ == "__main__":
-    start()
+    asyncio.run(chat())
+
+def start():
+    asyncio.run(chat())
