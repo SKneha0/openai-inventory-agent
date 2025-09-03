@@ -1,52 +1,81 @@
-## Inventory Agents 🗂️
+# 📦 Inventory Management System 
+***OpenAI Agents SDK***.
 
-An AI-powered inventory management system built with **OpenAI Agents SDK**.  
-This project helps you **add, update, delete, and manage inventory items** using natural language commands.  
-___
+ 
 
-## ✨ Features
-- ➕ Add new items to inventory  
-- ✏️ Update existing item quantities  
-- ❌ Delete items from inventory  
-- 📋 View current inventory list  
-- 🤖 Powered by **OpenAI Agents SDK** for intelligent command handling  
-___
+- An AI-powered **Inventory Management CLI Tool** built with Python and the **OpenAI Agents SDK**.
 
-### ⚙️ Installation
-
-## 1. Initialize Project with uv
-```bash
-uv init --package example-pkg
-
-2. Adding Dependencies
-
-uv add openai-agents
+- This project allows you to **list, add, update, and delete inventory items** interactively.  
+- All inventory data is stored in a local `inventory.json` file.
 
 
-▶️ Example Usage
-Run Inventory Agent
+## 🚀 Features
+- Interactive CLI for managing inventory
+- Persistent storage with JSON
+- Supports:
+  - 📋 List items
+  - ➕ Add items
+  - ✏️ Update items
+  - ❌ Delete items
+- AI-powered command interpretation
+- Modular design with `model.py` and `main.py`
+
+
+## 📂 Project Structure
+```inventory-agents/
+│── pyproject.toml # Project configuration
+│── README.md # Documentation
+│── src/
+│ └── inventory_agents/
+│ ├── init.py
+│ ├── main.py # CLI entrypoint
+│ ├── model.py # Model + API setup
+│ └── inventory.json # Data store
+```
+
+---
+
+## ⚙️ Installation
+
+1. Clone the repository:
+   ```Link```
+   git clone https://github.com/your-username/inventory-agents.git
+   cd inventory-agents
+Install dependencies with uv:
+```
+uv sync
+```
+# ▶️ Usage
+Run the interactive inventory agent:
+
+```
 uv run start-inventory
+```
+## Example workflow:
+Your action (list, add, update, delete, exit): list
+→ Inventory is empty.
 
-#Example Input
-Add a new item to the inventory: Laptop, quantity 25
+Your action (list, add, update, delete, exit): add
+→ Added Mouse (qty: 10) with ID 1.
 
+Your action (list, add, update, delete, exit): update
+→ Updated Mouse (ID: 1) to qty 20.
 
-#Example Output
-PS C:\Users\Neha Shahzad\Desktop\WPRK\openai-inventory-agent\inventory-agents\src\inventory_agents> uv run start-inventory
-RUN Initiated: Add a new item to the inventory: , quantity 25
-response_type='string' inventory_data='string'
-PS C:\Users\Neha Shahzad\Desktop\WPRK\openai-inventory-agent\inventory-agents\src\inventory_agents>
+Your action (list, add, update, delete, exit): delete
+→ Deleted Mouse (ID: 1).
+# 🛠️ Configuration
+API keys and model details are stored in the ```.env file:```
 
+GEMINI_MODEL=```gemini-2.5-flash```
 
-##🤝 Contributing
+GEMINI_API_KEY=your_api_key
 
-Pull requests are welcome!
-For major changes, please open an issue first to discuss what you would like to change.
+GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
 
+👩‍💻 Author
+Neha Shahzad
+📧 shahzadnaha@gmail.com
 
-##📜 License
-
+📜 License
 This project is licensed under the MIT License.
-See the LICENSE file for details.
 
-✨ Once you render this on GitHub, the headings, code blocks, and sections will look clean and professional.
