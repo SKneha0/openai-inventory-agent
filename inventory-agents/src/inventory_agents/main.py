@@ -18,7 +18,6 @@ def save_inventory():
         json.dump(inventory, f, indent=2)
 
 
-# Agar file exist karti hai to load karo
 if os.path.exists(FILE):
     try:
         with open(FILE, "r") as f:
