@@ -66,10 +66,12 @@ Your action (list, add, update, delete, exit): delete
 # 🛠️ Configuration
 API keys and model details are stored in the ```.env file:```
 
-GEMINI_MODEL=```gemini-2.5-flash```
-
+```
+GEMINI_MODEL=gemini-2.5-flash
+```
+```
 GEMINI_API_KEY=your_api_key
-
+```
 GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
 
 👩‍💻 Author
